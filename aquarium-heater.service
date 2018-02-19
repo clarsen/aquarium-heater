@@ -1,12 +1,12 @@
 [Unit]
-Description=Starts aquarium heater monitor/temperature logger
+Description=Aquarium heater monitor/temperature logger
 After=network-online.target
 
 [Service]
 Type=simple
 User=pi
 Group=pi
-ExecStart=/home/pi/lsrc/aquarium-heater/start.sh
+ExecStart=/home/pi/aquarium-heater/start.sh
 KillMode=control-group
 Restart=on-failure
 RestartSec=10

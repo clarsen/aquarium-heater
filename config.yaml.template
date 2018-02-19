@@ -1,0 +1,13 @@
+# betta fish like 78-80 F
+set_temp: 79.0 
+# really reaches 0.2 higher than set_temp + off_temp_offset due to water 
+# flow latency
+off_temp_offset: -0.1
+on_temp_offset: -0.3
+
+# for healthchecks.io
+healthcheck_url: https://hchk.io/... <= get your own healthcheck URL
+
+# for storing temperature in influx
+influx_host: 192.168.7.53 <= replace with your host
+influx_db: ruuvi <= replace with your DB

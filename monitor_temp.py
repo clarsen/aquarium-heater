@@ -4,16 +4,14 @@ import time
 import RPi.GPIO as GPIO
 import requests
 
-HEALTHCHECK_URL='https://hchk.io/<YOUR_ID_HERE>'
-INFLUX_HOST='<YOUR_HOST_HERE>'
-INFLUX_DB='<YOUR_DB_HERE>'
-
-# This has already been done by /boot/config.txt:
-# os.system('modprobe w1-gpio')
-# os.system('modprobe w1-therm')
+import yaml
+config = yaml.load(open("config.yaml"))
 
 from influxdb import InfluxDBClient
-client = InfluxDBClient(host=INFLUX_HOST, port=8086, database=INFLUX_DB, timeout=10)
+client = InfluxDBClient(host=config['influx_host'],
+                        port=8086,
+                        database=config['influx_db'],
+                        timeout=10)
 
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
@@ -40,7 +38,8 @@ def read_temp():
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(21, GPIO.OUT, initial=0)
 
-set_temp = 79.0 # betta fish like 78-80 F
+off_temp = config['set_temp'] + config['off_temp_offset']
+on_temp = config['set_temp'] + config['on_temp_offset']
 
 
 try:
@@ -49,10 +48,10 @@ try:
         print(temp_c, temp_f)
 
         # just a bit of leeway to avoid cycling too often.
-        if temp_f < (set_temp-0.5):
+        if temp_f <= on_temp:
             print("heat on")
             heat = 1
-        elif temp_f > (set_temp+0.5):
+        elif temp_f >= off_temp:
             print("heat off")
             heat = 0
         GPIO.output(21, heat)
@@ -66,8 +65,7 @@ try:
             }
         })
         client.write_points(json_body)
-        requests.get(HEALTHCHECK_URL, timeout=10)
-
+        requests.get(config['healthcheck_url'], timeout=10)
 
         time.sleep(10)
 except KeyboardInterrupt:
