@@ -1,9 +1,23 @@
 # betta fish like 78-80 F
-set_temp: 79.0 
-# really reaches 0.2 higher than set_temp + off_temp_offset due to water 
-# flow latency
-off_temp_offset: -0.1
-on_temp_offset: -0.3
+set_temp: 79.0
+
+# Temperature rises about 0.1 per minute while heater is fully on.
+# The precision of thermocouple is only 0.1 degree F.
+
+# We adjust temp output every heatperiod seconds. The relay only cycles on/off
+# once during each heating period.
+heatperiod: 30.0
+
+# temperature sampled every pid_sample seconds
+pid_sample_period: 10
+
+# only accumulate error for last pid_windup samples - limits overshoot
+pid_windup: 5
+
+# PID terms
+pid_P: 2.0
+pid_I: 0.1
+pid_D: 0.0
 
 # for healthchecks.io
 healthcheck_url: https://hchk.io/... <= get your own healthcheck URL
@@ -11,3 +25,6 @@ healthcheck_url: https://hchk.io/... <= get your own healthcheck URL
 # for storing temperature in influx
 influx_host: 192.168.7.53 <= replace with your host
 influx_db: ruuvi <= replace with your DB
+influx_host_verify_cert: <= for using TLS, replace with cert/CA for verification
+influx_user: <= replace with influx user
+influx_password: <= replace with influx password
