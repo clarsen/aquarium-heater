@@ -121,11 +121,11 @@ def pid_control(state):
 
 
 if __name__ == '__main__':
-    from multiprocessing import Process, Manager
+    from threading import Thread
     temp_c, temp_f = read_temp()
 
-    manager = Manager()
-    state = manager.dict()
+
+    state = {}
     state['on_temp'] = config['set_temp'] + config['on_temp_offset']
     state['off_temp'] = config['set_temp'] + config['off_temp_offset']
     state['temp_f'] = temp_f
@@ -133,11 +133,11 @@ if __name__ == '__main__':
     state['pid'] = 0
 
     try:
-        h = Process(target=pwm_heater_control_loop, args=(state,))
+        h = Thread(target=pwm_heater_control_loop, args=(state,))
         h.daemon = True
         h.start()
 
-        p = Process(target=pid_control, args=(state,))
+        p = Thread(target=pid_control, args=(state,))
         p.daemon = True
         p.start()
 

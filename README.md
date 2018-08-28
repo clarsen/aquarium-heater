@@ -9,3 +9,8 @@ Installation:
     sudo cp aquarium-heater.service /etc/systemd/system
     sudo systemctl enable aquarium-heater.service
     sudo systemctl start aquarium-heater.service
+
+Watching:
+
+    sudo journalctl -u aquarium-heater -f
+    
