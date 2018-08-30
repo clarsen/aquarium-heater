@@ -89,8 +89,9 @@ def pid_control(state):
         temp_c, temp_f = read_temp()
         print(temp_c, temp_f)
         state['temp_f'] = temp_f
-        start = time.clock()
+        start = time.time()
         next = start + config['pid_sample_period']
+        state['polled'] = start
 
         pid.update(state['temp_f'])
         print("pid.output={}".format(pid.output))
@@ -115,7 +116,7 @@ def pid_control(state):
             print(e)
             pass
 
-        until_next_period = next - time.clock()
+        until_next_period = next - time.time()
         if until_next_period > 0:
             time.sleep(until_next_period)
 
@@ -131,6 +132,7 @@ if __name__ == '__main__':
     state['temp_f'] = temp_f
     state['set_temp'] = config['set_temp']
     state['pid'] = 0
+    state['polled'] = time.time()
 
     try:
         h = Thread(target=pwm_heater_control_loop, args=(state,))
@@ -142,7 +144,11 @@ if __name__ == '__main__':
         p.start()
 
         while h.is_alive() and p.is_alive():
-
             time.sleep(5)
+            since_last_poll = time.time() - state['polled']
+            if since_last_poll > 2 * config['pid_sample_period']:
+                print("No polling in last {} seconds, exiting and restarting".format(2*config['pid_sample_period']))
+                sys.exit(1)
+
     except KeyboardInterrupt:
         GPIO.cleanup()
