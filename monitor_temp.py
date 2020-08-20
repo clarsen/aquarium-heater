@@ -98,24 +98,16 @@ def pid_control(state):
         print("P,I,D={}".format(pid.pidterms()))
         state['pid'] = pid.output
 
-        json_body = []
-        json_body.append({
-            "measurement": "saltine.temp_f",
-            "tags": {
-            },
-            "fields": {
+        json_body = [{"measurement": "saltine.temp_f", "tags": {
+            }, "fields": {
                 "value": float(temp_f),
-            }
-        })
-
+            }}]
         try:
             # sometimes network requests fail, but don't fail this loop
             client.write_points(json_body)
             requests.get(config['healthcheck_url'], timeout=10)
         except Exception as e:
             print(e)
-            pass
-
         until_next_period = next - time.time()
         if until_next_period > 0:
             time.sleep(until_next_period)
@@ -126,13 +118,14 @@ if __name__ == '__main__':
     temp_c, temp_f = read_temp()
 
 
-    state = {}
-    state['on_temp'] = config['set_temp'] + config['on_temp_offset']
-    state['off_temp'] = config['set_temp'] + config['off_temp_offset']
-    state['temp_f'] = temp_f
-    state['set_temp'] = config['set_temp']
-    state['pid'] = 0
-    state['polled'] = time.time()
+    state = {
+        'on_temp': config['set_temp'] + config['on_temp_offset'],
+        'off_temp': config['set_temp'] + config['off_temp_offset'],
+        'temp_f': temp_f,
+        'set_temp': config['set_temp'],
+        'pid': 0,
+        'polled': time.time(),
+    }
 
     try:
         h = Thread(target=pwm_heater_control_loop, args=(state,))
